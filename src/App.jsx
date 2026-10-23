@@ -352,8 +352,9 @@ const AnimatedFishingCanvas = ({ animState = "idle" }) => {
       style={{
         width: "100%",
         height: "130px",
-        borderRadius: "16px",
-        border: "3px solid #0284c7",
+        borderRadius: "20px",
+        border: "4px solid #0284c7",
+        boxShadow: "0 8px 0 #0369a1, inset 0 4px 6px rgba(0,0,0,0.15)",
         display: "block"
       }}
     />
@@ -371,7 +372,6 @@ const AnimatedBucketPOVCanvas = ({ fishCount = 0, fishList = [] }) => {
     let frameId;
     let tick = 0;
 
-    // Generate random swimming positions for caught fish inside bucket
     const fishData = Array.from({ length: fishCount }).map((_, i) => ({
       x: 60 + (i % 3) * 50 + (Math.random() * 20 - 10),
       y: 60 + Math.floor(i / 3) * 45 + (Math.random() * 15 - 7.5),
@@ -385,25 +385,21 @@ const AnimatedBucketPOVCanvas = ({ fishCount = 0, fishList = [] }) => {
       tick++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Bucket Water Base
       ctx.fillStyle = "#0284c7";
       ctx.beginPath();
       ctx.arc(120, 120, 110, 0, Math.PI * 2);
       ctx.fill();
 
-      // Water Ripple
       ctx.strokeStyle = "rgba(255,255,255,0.3)";
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(120, 120, 60 + Math.sin(tick * 0.05) * 10, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Render Each Animated Pixel Fish
       fishData.forEach((f) => {
         f.x += f.speedX;
         f.y += f.speedY;
 
-        // Keep inside bucket radius
         const dx = f.x - 120;
         const dy = f.y - 120;
         if (Math.sqrt(dx * dx + dy * dy) > 80) {
@@ -414,13 +410,11 @@ const AnimatedBucketPOVCanvas = ({ fishCount = 0, fishList = [] }) => {
         ctx.save();
         ctx.translate(f.x, f.y);
 
-        // Fish Body
         ctx.fillStyle = f.color;
         ctx.beginPath();
         ctx.ellipse(0, 0, f.size, f.size / 2, Math.atan2(f.speedY, f.speedX), 0, Math.PI * 2);
         ctx.fill();
 
-        // Fish Tail
         ctx.beginPath();
         const angle = Math.atan2(f.speedY, f.speedX);
         const tailX = -Math.cos(angle) * f.size;
@@ -431,7 +425,6 @@ const AnimatedBucketPOVCanvas = ({ fishCount = 0, fishList = [] }) => {
         ctx.closePath();
         ctx.fill();
 
-        // Fish Eye
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
         ctx.arc(Math.cos(angle) * (f.size / 2), Math.sin(angle) * (f.size / 2), 3, 0, Math.PI * 2);
@@ -459,8 +452,8 @@ const AnimatedBucketPOVCanvas = ({ fishCount = 0, fishList = [] }) => {
       height={240}
       style={{
         borderRadius: "50%",
-        border: "10px solid #78350f",
-        boxShadow: "inset 0 0 20px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.2)",
+        border: "12px solid #78350f",
+        boxShadow: "inset 0 0 25px rgba(0,0,0,0.6), 0 12px 20px rgba(0,0,0,0.25)",
         display: "block",
         margin: "0 auto"
       }}
@@ -478,7 +471,7 @@ export default function App() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [cadetName, setCadetName] = useState("Ranger Scout");
-  const [gameState, setGameState] = useState("welcome"); // welcome, quiz, bucket_pov, summary
+  const [gameState, setGameState] = useState("welcome");
   const [timer, setTimer] = useState(25);
   const [timerActive, setTimerActive] = useState(false);
   const [caughtFish, setCaughtFish] = useState(null);
@@ -579,51 +572,67 @@ export default function App() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "8px",
+        padding: "10px",
         boxSizing: "border-box"
       }}
     >
-      {/* CONTAINER UTAMA */}
+      {/* Dynamic 3D Style Helpers */}
+      <style>{`
+        .btn-3d {
+          transition: all 0.1s ease;
+          position: relative;
+        }
+        .btn-3d:active {
+          transform: translateY(4px) !important;
+          box-shadow: none !important;
+        }
+      `}</style>
+
+      {/* CONTAINER UTAMA / 3D MOBILE CABINET */}
       <div
         style={{
           width: "100%",
           maxWidth: "430px",
           backgroundColor: "#ffffff",
-          borderRadius: "28px",
-          border: "4px solid #fde047",
-          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+          borderRadius: "32px",
+          border: "5px solid #fde047",
+          boxShadow: "0 25px 0 #eab308, 0 30px 40px rgba(0,0,0,0.15)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          minHeight: "94vh"
+          minHeight: "92vh",
+          position: "relative"
         }}
       >
-        {/* HEADER BAR */}
+        {/* HEADER BAR 3D */}
         <div
           style={{
             backgroundColor: "#fef9c3",
-            padding: "10px 14px",
-            borderBottom: "3px solid #fde047",
+            padding: "12px 16px",
+            borderBottom: "4px solid #fde047",
+            boxShadow: "0 4px 0 #fef08a",
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center"
+            alignItems: "center",
+            zIndex: 10
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div
               style={{
                 backgroundColor: "#15803d",
-                padding: "6px",
-                borderRadius: "12px"
+                padding: "8px",
+                borderRadius: "14px",
+                boxShadow: "0 4px 0 #166534"
               }}
             >
-              <Compass style={{ width: 20, height: 20, color: "#ffffff" }} />
+              <Compass style={{ width: 22, height: 22, color: "#ffffff" }} />
             </div>
             <div>
               <div
                 style={{
                   fontWeight: 900,
-                  fontSize: "13px",
+                  fontSize: "14px",
                   color: "#15803d",
                   lineHeight: "1.1"
                 }}
@@ -640,18 +649,20 @@ export default function App() {
 
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
+            className="btn-3d"
             style={{
               backgroundColor: "#fef08a",
-              border: "none",
-              padding: "6px",
-              borderRadius: "12px",
+              border: "2px solid #fde047",
+              padding: "8px",
+              borderRadius: "14px",
+              boxShadow: "0 4px 0 #facc15",
               cursor: "pointer"
             }}
           >
             {soundEnabled ? (
-              <Volume2 style={{ width: 16, height: 16, color: "#713f12" }} />
+              <Volume2 style={{ width: 18, height: 18, color: "#713f12" }} />
             ) : (
-              <VolumeX style={{ width: 16, height: 16, color: "#94a3b8" }} />
+              <VolumeX style={{ width: 18, height: 18, color: "#94a3b8" }} />
             )}
           </button>
         </div>
@@ -659,7 +670,7 @@ export default function App() {
         {/* AREA ISI UTAMA */}
         <div
           style={{
-            padding: "12px",
+            padding: "14px",
             flex: 1,
             display: "flex",
             flexDirection: "column",
@@ -682,14 +693,15 @@ export default function App() {
                 style={{
                   backgroundColor: "#dcfce7",
                   color: "#15803d",
-                  padding: "4px 12px",
+                  padding: "6px 14px",
                   borderRadius: "999px",
                   fontSize: "11px",
                   fontWeight: 900,
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "4px",
-                  border: "1px solid #86efac"
+                  gap: "6px",
+                  border: "2px solid #86efac",
+                  boxShadow: "0 4px 0 #bbf7d0"
                 }}
               >
                 <Shield style={{ width: 14, height: 14, color: "#16a34a" }} />
@@ -700,7 +712,7 @@ export default function App() {
 
               <h2
                 style={{
-                  fontSize: "20px",
+                  fontSize: "22px",
                   fontWeight: 900,
                   color: "#713f12",
                   margin: "0"
@@ -725,7 +737,7 @@ export default function App() {
                 <label
                   style={{
                     fontSize: "11px",
-                    fontWeight: 800,
+                    fontWeight: 900,
                     color: "#854d0e",
                     textTransform: "uppercase"
                   }}
@@ -738,15 +750,16 @@ export default function App() {
                   onChange={(e) => setCadetName(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "12px",
-                    marginTop: "4px",
+                    padding: "14px",
+                    marginTop: "6px",
                     backgroundColor: "#fefce8",
-                    border: "2px solid #fde047",
-                    borderRadius: "16px",
-                    fontWeight: 800,
+                    border: "3px solid #fde047",
+                    borderRadius: "18px",
+                    fontWeight: 900,
                     textAlign: "center",
-                    fontSize: "15px",
+                    fontSize: "16px",
                     color: "#713f12",
+                    boxShadow: "inset 0 4px 6px rgba(0,0,0,0.06)",
                     boxSizing: "border-box"
                   }}
                   placeholder="Ketik nama Ranger..."
@@ -755,16 +768,17 @@ export default function App() {
 
               <button
                 onClick={startQuiz}
+                className="btn-3d"
                 style={{
                   width: "100%",
-                  padding: "14px",
+                  padding: "16px",
                   backgroundColor: "#15803d",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "18px",
+                  borderRadius: "20px",
                   fontWeight: 900,
-                  fontSize: "16px",
-                  boxShadow: "0 5px 0 #166534",
+                  fontSize: "17px",
+                  boxShadow: "0 6px 0 #166534",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -772,7 +786,7 @@ export default function App() {
                   gap: "8px"
                 }}
               >
-                <Fish style={{ width: 20, height: 20, color: "#ffffff" }} />
+                <Fish style={{ width: 22, height: 22, color: "#ffffff" }} />
                 MULAI KUIS RANGER CLASS!
               </button>
             </div>
@@ -784,17 +798,18 @@ export default function App() {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "8px",
+                gap: "10px",
                 flex: 1
               }}
             >
-              {/* METERAN ATAS */}
+              {/* METERAN ATAS 3D */}
               <div
                 style={{
                   backgroundColor: "#fefce8",
-                  padding: "8px 10px",
-                  borderRadius: "14px",
-                  border: "2px solid #fde047",
+                  padding: "10px 12px",
+                  borderRadius: "16px",
+                  border: "3px solid #fde047",
+                  boxShadow: "0 4px 0 #facc15",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center"
@@ -802,12 +817,12 @@ export default function App() {
               >
                 <span
                   style={{
-                    fontSize: "11px",
+                    fontSize: "12px",
                     fontWeight: 900,
                     backgroundColor: "#fef08a",
                     color: "#713f12",
-                    padding: "3px 8px",
-                    borderRadius: "8px"
+                    padding: "4px 10px",
+                    borderRadius: "10px"
                   }}
                 >
                   Q {currentIdx + 1}/{questions.length}
@@ -817,25 +832,26 @@ export default function App() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "4px",
-                    fontSize: "12px",
+                    gap: "6px",
+                    fontSize: "13px",
                     fontWeight: 900,
                     color: "#0284c7"
                   }}
                 >
-                  <Fish style={{ width: 16, height: 16, color: "#0284c7" }} />
+                  <Fish style={{ width: 18, height: 18, color: "#0284c7" }} />
                   <span>Bucket: {fishCaught.length} 🐟</span>
                 </div>
               </div>
 
-              {/* TIMER */}
+              {/* TIMER 3D */}
               <div
                 style={{
                   width: "100%",
-                  height: "6px",
+                  height: "8px",
                   backgroundColor: "#e2e8f0",
                   borderRadius: "999px",
-                  overflow: "hidden"
+                  overflow: "hidden",
+                  border: "1px solid #cbd5e1"
                 }}
               >
                 <div
@@ -855,17 +871,17 @@ export default function App() {
                   <div
                     style={{
                       position: "absolute",
-                      bottom: "6px",
+                      bottom: "8px",
                       left: "50%",
                       transform: "translateX(-50%)",
                       backgroundColor:
                         animState === "success" ? "#22c55e" : "#ef4444",
                       color: "#ffffff",
-                      padding: "3px 10px",
-                      borderRadius: "10px",
-                      fontSize: "10px",
+                      padding: "4px 12px",
+                      borderRadius: "12px",
+                      fontSize: "11px",
                       fontWeight: 900,
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                      boxShadow: "0 4px 0 rgba(0,0,0,0.2)"
                     }}
                   >
                     {actionMessage}
@@ -878,20 +894,21 @@ export default function App() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "6px",
+                  gap: "8px",
                   marginTop: "2px"
                 }}
               >
                 <div
                   style={{
                     backgroundColor: "#fffbeb",
-                    padding: "10px 12px",
-                    borderRadius: "16px",
-                    border: "2px solid #fcd34d",
-                    fontSize: "12px",
+                    padding: "12px 14px",
+                    borderRadius: "18px",
+                    border: "3px solid #fcd34d",
+                    boxShadow: "0 4px 0 #fef08a",
+                    fontSize: "13px",
                     fontWeight: 900,
                     color: "#713f12",
-                    lineHeight: "1.3"
+                    lineHeight: "1.35"
                   }}
                 >
                   {activeQuestion.question}
@@ -901,26 +918,30 @@ export default function App() {
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "6px"
+                    gap: "8px"
                   }}
                 >
                   {activeQuestion.options.map((opt, idx) => {
                     let btnBg = "#ffffff";
                     let btnBorder = "#fde047";
+                    let btnShadow = "#facc15";
                     let btnColor = "#1e293b";
 
                     if (isAnswered) {
                       if (idx === activeQuestion.answerIndex) {
                         btnBg = "#dcfce7";
                         btnBorder = "#22c55e";
+                        btnShadow = "#16a34a";
                         btnColor = "#14532d";
                       } else if (idx === selectedOption) {
                         btnBg = "#ffe4e6";
                         btnBorder = "#f43f5e";
+                        btnShadow = "#e11d48";
                         btnColor = "#881337";
                       } else {
                         btnBg = "#f8fafc";
-                        btnBorder = "#e2e8f0";
+                        btnBorder = "#cbd5e1";
+                        btnShadow = "#94a3b8";
                         btnColor = "#94a3b8";
                       }
                     }
@@ -930,11 +951,13 @@ export default function App() {
                         key={idx}
                         onClick={() => handleOptionSelect(idx)}
                         disabled={isAnswered}
+                        className="btn-3d"
                         style={{
-                          padding: "10px 12px",
+                          padding: "12px 14px",
                           backgroundColor: btnBg,
                           border: `2px solid ${btnBorder}`,
-                          borderRadius: "14px",
+                          borderRadius: "16px",
+                          boxShadow: `0 4px 0 ${btnShadow}`,
                           textAlign: "left",
                           fontWeight: 800,
                           fontSize: "12px",
@@ -949,8 +972,8 @@ export default function App() {
                         {isAnswered && idx === activeQuestion.answerIndex && (
                           <CheckCircle2
                             style={{
-                              width: 16,
-                              height: 16,
+                              width: 18,
+                              height: 18,
                               color: "#16a34a",
                               flexShrink: 0
                             }}
@@ -961,8 +984,8 @@ export default function App() {
                           idx !== activeQuestion.answerIndex && (
                             <XCircle
                               style={{
-                                width: 16,
-                                height: 16,
+                                width: 18,
+                                height: 18,
                                 color: "#e11d48",
                                 flexShrink: 0
                               }}
@@ -978,21 +1001,22 @@ export default function App() {
               {isAnswered && (
                 <button
                   onClick={handleNextQuestion}
+                  className="btn-3d"
                   style={{
                     width: "100%",
-                    padding: "12px",
+                    padding: "14px",
                     backgroundColor: "#f59e0b",
                     color: "#ffffff",
                     border: "none",
-                    borderRadius: "16px",
+                    borderRadius: "18px",
                     fontWeight: 900,
-                    fontSize: "14px",
-                    boxShadow: "0 4px 0 #b45309",
+                    fontSize: "15px",
+                    boxShadow: "0 5px 0 #b45309",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "6px",
+                    gap: "8px",
                     marginTop: "auto"
                   }}
                 >
@@ -1001,7 +1025,7 @@ export default function App() {
                       ? "Lihat ke Dalam Ember Ikan 🪣"
                       : "Soal Selanjutnya"}
                   </span>
-                  <ChevronRight style={{ width: 16, height: 16 }} />
+                  <ChevronRight style={{ width: 18, height: 18 }} />
                 </button>
               )}
             </div>
@@ -1015,33 +1039,34 @@ export default function App() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "12px",
+                gap: "14px",
                 margin: "auto 0"
               }}
             >
               <div
                 style={{
                   backgroundColor: "#dcfce7",
-                  padding: "4px 12px",
+                  padding: "6px 14px",
                   borderRadius: "999px",
                   fontSize: "11px",
                   fontWeight: 900,
-                  color: "#15803d"
+                  color: "#15803d",
+                  border: "2px solid #86efac",
+                  boxShadow: "0 4px 0 #bbf7d0"
                 }}
               >
                 👀 MENGINTIP KE DALAM EMBER IKAN
               </div>
 
-              {/* ANIMATED CANVAS BUCKET POV */}
               <AnimatedBucketPOVCanvas fishCount={fishCaught.length} fishList={fishCaught} />
 
-              {/* OVERVIEW TEXT */}
               <div
                 style={{
                   backgroundColor: "#fffbeb",
-                  border: "2px solid #fcd34d",
-                  borderRadius: "16px",
-                  padding: "10px 14px",
+                  border: "3px solid #fcd34d",
+                  borderRadius: "20px",
+                  padding: "12px 16px",
+                  boxShadow: "0 4px 0 #fef08a",
                   width: "100%",
                   boxSizing: "border-box"
                 }}
@@ -1056,25 +1081,26 @@ export default function App() {
 
               <button
                 onClick={finishBucketViewAndGoSummary}
+                className="btn-3d"
                 style={{
                   width: "100%",
-                  padding: "14px",
+                  padding: "16px",
                   backgroundColor: "#15803d",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "16px",
+                  borderRadius: "18px",
                   fontWeight: 900,
-                  fontSize: "15px",
-                  boxShadow: "0 5px 0 #166534",
+                  fontSize: "16px",
+                  boxShadow: "0 6px 0 #166534",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "6px"
+                  gap: "8px"
                 }}
               >
                 <span>Lihat Hasil Akhir</span>
-                <ChevronRight style={{ width: 18, height: 18 }} />
+                <ChevronRight style={{ width: 20, height: 20 }} />
               </button>
             </div>
           )}
@@ -1087,24 +1113,25 @@ export default function App() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "12px",
+                gap: "14px",
                 margin: "auto 0"
               }}
             >
               <div
                 style={{
                   backgroundColor: "#fef08a",
-                  padding: "10px",
+                  padding: "12px",
                   borderRadius: "999px",
-                  display: "inline-block"
+                  display: "inline-block",
+                  boxShadow: "0 6px 0 #facc15"
                 }}
               >
-                <Medal style={{ width: 40, height: 40, color: "#ca8a04" }} />
+                <Medal style={{ width: 44, height: 44, color: "#ca8a04" }} />
               </div>
 
               <h2
                 style={{
-                  fontSize: "20px",
+                  fontSize: "22px",
                   fontWeight: 900,
                   color: "#713f12",
                   margin: 0
@@ -1116,16 +1143,17 @@ export default function App() {
               <div
                 style={{
                   backgroundColor: "#fefce8",
-                  border: "3px solid #fde047",
-                  borderRadius: "18px",
-                  padding: "12px",
+                  border: "4px solid #fde047",
+                  borderRadius: "22px",
+                  padding: "14px",
+                  boxShadow: "0 6px 0 #facc15",
                   boxSizing: "border-box",
                   width: "100%"
                 }}
               >
                 <div
                   style={{
-                    fontSize: "16px",
+                    fontSize: "18px",
                     fontWeight: 900,
                     color: "#b45309",
                     margin: "2px 0"
@@ -1135,10 +1163,10 @@ export default function App() {
                 </div>
                 <div
                   style={{
-                    fontSize: "10px",
+                    fontSize: "11px",
                     fontWeight: 800,
                     color: "#15803d",
-                    marginBottom: "8px"
+                    marginBottom: "10px"
                   }}
                 >
                   Ranger Class • Crusader Pathfinder Club
@@ -1148,17 +1176,18 @@ export default function App() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "8px",
+                    gap: "10px",
                     backgroundColor: "#ffffff",
-                    padding: "8px",
-                    borderRadius: "10px"
+                    padding: "10px",
+                    borderRadius: "14px",
+                    border: "2px solid #fde047"
                   }}
                 >
                   <div>
                     <div
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 800,
+                        fontSize: "10px",
+                        fontWeight: 900,
                         color: "#94a3b8"
                       }}
                     >
@@ -1166,7 +1195,7 @@ export default function App() {
                     </div>
                     <div
                       style={{
-                        fontSize: "15px",
+                        fontSize: "16px",
                         fontWeight: 900,
                         color: "#0284c7"
                       }}
@@ -1177,8 +1206,8 @@ export default function App() {
                   <div>
                     <div
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 800,
+                        fontSize: "10px",
+                        fontWeight: 900,
                         color: "#94a3b8"
                       }}
                     >
@@ -1186,7 +1215,7 @@ export default function App() {
                     </div>
                     <div
                       style={{
-                        fontSize: "15px",
+                        fontSize: "16px",
                         fontWeight: 900,
                         color: "#b45309"
                       }}
@@ -1199,16 +1228,17 @@ export default function App() {
 
               <button
                 onClick={startQuiz}
+                className="btn-3d"
                 style={{
                   width: "100%",
-                  padding: "14px",
+                  padding: "16px",
                   backgroundColor: "#15803d",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "14px",
+                  borderRadius: "16px",
                   fontWeight: 900,
-                  fontSize: "14px",
-                  boxShadow: "0 4px 0 #166534",
+                  fontSize: "15px",
+                  boxShadow: "0 6px 0 #166534",
                   cursor: "pointer"
                 }}
               >
@@ -1222,7 +1252,7 @@ export default function App() {
         <div
           style={{
             backgroundColor: "#fefce8",
-            padding: "6px",
+            padding: "8px",
             textAlign: "center",
             fontSize: "9px",
             fontWeight: 800,
