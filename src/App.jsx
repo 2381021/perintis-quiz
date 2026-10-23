@@ -10,7 +10,8 @@ import {
   Fish,
   Waves,
   Medal,
-  Shield
+  Shield,
+  Zap
 } from "lucide-react";
 
 // --- SOUND SYNTHESIZER ---
@@ -42,14 +43,22 @@ const playCuteSound = (type) => {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
       osc.stop(now + 0.3);
-    } else if (type === "click" || type === "open") {
+    } else if (type === "reel") {
+      osc.type = "square";
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    } else if (type === "click") {
       osc.type = "sine";
       osc.frequency.setValueAtTime(600, now);
-      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.15);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
       osc.start(now);
-      osc.stop(now + 0.2);
+      osc.stop(now + 0.1);
     } else if (type === "victory") {
       const notes = [523.25, 659.25, 783.99, 1046.5];
       notes.forEach((freq, idx) => {
@@ -173,8 +182,8 @@ const INITIAL_QUESTIONS = [
   }
 ];
 
-// --- ANIMASI CANVAS 2D SAAT MEMANCING ---
-const AnimatedFishingCanvas = ({ animState = "idle" }) => {
+// --- FIRST-PERSON 3D FISHING CANVAS ---
+const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -188,152 +197,128 @@ const AnimatedFishingCanvas = ({ animState = "idle" }) => {
       tick++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Langit
-      ctx.fillStyle = "#bae6fd";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.width;
+      const h = canvas.height;
+      const horizonY = 55;
 
-      // Matahari
+      // 1. 3D Sky Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+      skyGrad.addColorStop(0, "#0284c7");
+      skyGrad.addColorStop(1, "#bae6fd");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, horizonY);
+
+      // Sun
       ctx.fillStyle = "#fde047";
       ctx.beginPath();
-      ctx.arc(320, 25, 18, 0, Math.PI * 2);
+      ctx.arc(w / 2, horizonY - 15, 14, 0, Math.PI * 2);
       ctx.fill();
 
-      // Awan
-      const cloudX = (tick * 0.5) % (canvas.width + 60) - 30;
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(cloudX, 20, 10, 0, Math.PI * 2);
-      ctx.arc(cloudX + 10, 16, 12, 0, Math.PI * 2);
-      ctx.arc(cloudX + 20, 20, 10, 0, Math.PI * 2);
-      ctx.fill();
+      // 2. 3D Water Surface with Perspective Lines
+      const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+      waterGrad.addColorStop(0, "#0369a1");
+      waterGrad.addColorStop(1, "#0284c7");
+      ctx.fillStyle = waterGrad;
+      ctx.fillRect(0, horizonY, w, h - horizonY);
 
-      // Air & Gelombang
-      const waterY = 90;
-      ctx.fillStyle = "#0284c7";
-      ctx.fillRect(0, waterY, canvas.width, canvas.height - waterY);
+      // Perspective Grid / Wave lines
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 1.5;
 
-      ctx.fillStyle = "#38bdf8";
-      ctx.beginPath();
-      ctx.moveTo(0, waterY);
-      for (let x = 0; x <= canvas.width; x += 20) {
-        const y = waterY + Math.sin((x + tick * 4) * 0.05) * 4;
-        ctx.lineTo(x, y);
-      }
-      ctx.lineTo(canvas.width, canvas.height);
-      ctx.lineTo(0, canvas.height);
-      ctx.fill();
-
-      // Dermaga Kayu
-      ctx.fillStyle = "#78350f";
-      ctx.fillRect(10, 75, 70, 12);
-      ctx.fillRect(25, 87, 8, 40);
-      ctx.fillRect(55, 87, 8, 40);
-
-      // Karakter Beruang Pathfinder Ranger Class
-      const bearX = 45;
-      const bearY = 52;
-
-      ctx.fillStyle = "#a16207";
-      ctx.beginPath();
-      ctx.arc(bearX, bearY, 18, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(bearX - 14, bearY - 14, 6, 0, Math.PI * 2);
-      ctx.arc(bearX + 14, bearY - 14, 6, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#fef08a";
-      ctx.beginPath();
-      ctx.arc(bearX, bearY + 4, 8, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#0f172a";
-      ctx.beginPath();
-      ctx.arc(bearX, bearY + 2, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Topi Ranger (Hijau Tua)
-      ctx.fillStyle = "#15803d";
-      ctx.beginPath();
-      ctx.arc(bearX, bearY - 10, 16, Math.PI, 0);
-      ctx.fill();
-
-      // Pancingan & Tali
-      let rodAngle = -0.3;
-      let lineX = 220;
-      let lineY = waterY + Math.sin(tick * 0.08) * 3;
-
-      if (animState === "success") {
-        rodAngle = -0.8 + Math.sin(tick * 0.3) * 0.1;
-        lineX = 180;
-      } else if (animState === "fail") {
-        rodAngle = -0.1;
-        lineX = 240;
+      for (let y = horizonY; y < h; y += 12) {
+        const lineY = y + (Math.sin((tick + y) * 0.08) * 2);
+        ctx.beginPath();
+        ctx.moveTo(0, lineY);
+        ctx.lineTo(w, lineY);
+        ctx.stroke();
       }
 
+      // 3. 3D Fishing Rod Tip (First Person POV from Bottom Right)
+      const rodStartX = w * 0.85;
+      const rodStartY = h + 10;
+      let rodTipX = w * 0.5;
+      let rodTipY = horizonY + 20;
+
+      if (animState === "reeling") {
+        rodTipX += Math.sin(tick * 0.4) * 6;
+        rodTipY += Math.cos(tick * 0.4) * 4;
+      }
+
+      // Fishing Rod
       ctx.strokeStyle = "#451a03";
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.moveTo(bearX + 5, bearY + 5);
-      const tipX = bearX + 5 + Math.cos(rodAngle) * 80;
-      const tipY = bearY + 5 + Math.sin(rodAngle) * 80;
-      ctx.lineTo(tipX, tipY);
+      ctx.moveTo(rodStartX, rodStartY);
+      ctx.lineTo(rodTipX, rodTipY);
       ctx.stroke();
 
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 1.5;
+      // Rod Guides / Rings
+      ctx.fillStyle = "#facc15";
       ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
+      ctx.arc(rodTipX, rodTipY, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. Fishing Line & 3D Bobber / Fish Position
+      let bobberX = w * 0.5;
+      let bobberY = horizonY + 35 + (1 - reelProgress / 100) * 50;
 
       if (animState === "fail") {
-        ctx.lineTo(tipX + 20, tipY + 25);
+        // Line Snapped Effect
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(rodTipX, rodTipY);
+        ctx.lineTo(rodTipX - 30, rodTipY + 40);
         ctx.stroke();
-
-        ctx.fillStyle = "#38bdf8";
-        ctx.beginPath();
-        ctx.arc(lineX, waterY + 5, 12, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#334155";
-        ctx.fillRect(lineX - 10, waterY - 15, 16, 12);
-        ctx.fillRect(lineX - 18, waterY - 7, 24, 8);
-      } else if (animState === "success") {
-        ctx.lineTo(lineX, lineY - 20);
-        ctx.stroke();
-
-        const fishProgress = (tick % 60) / 60;
-        const fishArcX = tipX + (bearX - tipX) * fishProgress;
-        const fishArcY = waterY - Math.sin(fishProgress * Math.PI) * 50;
-
-        ctx.fillStyle = "#f59e0b";
-        ctx.beginPath();
-        ctx.ellipse(fishArcX, fishArcY, 12, 6, Math.PI / 6, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(fishArcX + 10, fishArcY);
-        ctx.lineTo(fishArcX + 18, fishArcY - 6);
-        ctx.lineTo(fishArcX + 18, fishArcY + 6);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(lineX, waterY, 8 + Math.sin(tick) * 2, 0, Math.PI * 2);
-        ctx.fill();
       } else {
-        ctx.lineTo(lineX, lineY);
+        // Active Line
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(rodTipX, rodTipY);
+        ctx.lineTo(bobberX, bobberY);
         ctx.stroke();
 
+        // 3D Bobber Float
+        const floatY = bobberY + Math.sin(tick * 0.1) * 3;
+
+        // Ripple Ring
+        ctx.strokeStyle = "rgba(255,255,255,0.6)";
+        ctx.beginPath();
+        ctx.ellipse(bobberX, floatY + 4, 12 + Math.sin(tick * 0.2) * 3, 5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Red/White Bobber
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
-        ctx.arc(lineX, lineY, 4, 0, Math.PI);
+        ctx.arc(bobberX, floatY, 6, Math.PI, 0);
         ctx.fill();
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.arc(lineX, lineY, 4, Math.PI, Math.PI * 2);
+        ctx.arc(bobberX, floatY, 6, 0, Math.PI);
         ctx.fill();
+
+        // If reeling or success, draw the fish approaching in 3D
+        if (animState === "reeling" || animState === "success") {
+          const fishScale = 0.5 + (reelProgress / 100) * 0.8;
+          ctx.save();
+          ctx.translate(bobberX, floatY + 15);
+          ctx.scale(fishScale, fishScale);
+
+          ctx.fillStyle = "#f59e0b";
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 16, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(-12, 0);
+          ctx.lineTo(-22, -8);
+          ctx.lineTo(-22, 8);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        }
       }
 
       frameId = requestAnimationFrame(render);
@@ -342,19 +327,19 @@ const AnimatedFishingCanvas = ({ animState = "idle" }) => {
     render();
 
     return () => cancelAnimationFrame(frameId);
-  }, [animState]);
+  }, [animState, reelProgress]);
 
   return (
     <canvas
       ref={canvasRef}
       width={360}
-      height={130}
+      height={140}
       style={{
         width: "100%",
-        height: "130px",
+        height: "140px",
         borderRadius: "20px",
         border: "4px solid #0284c7",
-        boxShadow: "0 8px 0 #0369a1, inset 0 4px 6px rgba(0,0,0,0.15)",
+        boxShadow: "0 8px 0 #0369a1, inset 0 4px 10px rgba(0,0,0,0.3)",
         display: "block"
       }}
     />
@@ -478,6 +463,10 @@ export default function App() {
   const [actionMessage, setActionMessage] = useState("");
   const [animState, setAnimState] = useState("idle");
 
+  // 3D Interactive Reel Mechanic State
+  const [reelProgress, setReelProgress] = useState(0);
+  const [isReelingMode, setIsReelingMode] = useState(false);
+
   const activeQuestion = questions[currentIdx];
 
   useEffect(() => {
@@ -506,6 +495,8 @@ export default function App() {
     setIsAnswered(false);
     setSelectedOption(null);
     setAnimState("idle");
+    setReelProgress(0);
+    setIsReelingMode(false);
     setTimer(25);
     setTimerActive(true);
   };
@@ -521,22 +512,40 @@ export default function App() {
       triggerAudio("correct");
       const randomFish = FISH_TYPES[Math.floor(Math.random() * FISH_TYPES.length)];
       setCaughtFish(randomFish);
-      setFishCaught((prev) => [...prev, randomFish]);
-      setScore((prev) => prev + randomFish.pts + streak * 10);
-      setStreak((prev) => prev + 1);
-      setAnimState("success");
-      setActionMessage(`DAPAT ${randomFish.name}! (+1 Ikan) 🎣✨`);
+      setIsReelingMode(true);
+      setAnimState("reeling");
+      setReelProgress(20);
+      setActionMessage("FISH ON THE HOOK! TAP REEL FAST! 🎣🔥");
     } else {
       triggerAudio("wrong");
       setStreak(0);
       setCaughtFish(null);
       setAnimState("fail");
+      setIsReelingMode(false);
       if (fishCaught.length > 0) {
         setFishCaught((prev) => prev.slice(0, -1));
-        setActionMessage("TALI PUTUS! (-1 Ikan dari ember) 🦀💔");
+        setActionMessage("LINE SNAPPED! (-1 Ikan dari ember) 🦀💔");
       } else {
         setActionMessage("TALI TERSANGKUT DI GANGGANG! 🌿");
       }
+    }
+  };
+
+  const handleTapReel = () => {
+    if (!isReelingMode) return;
+    triggerAudio("reel");
+    const nextProgress = reelProgress + 25;
+    if (nextProgress >= 100) {
+      triggerAudio("catch");
+      setReelProgress(100);
+      setIsReelingMode(false);
+      setAnimState("success");
+      setFishCaught((prev) => [...prev, caughtFish]);
+      setScore((prev) => prev + caughtFish.pts + streak * 10);
+      setStreak((prev) => prev + 1);
+      setActionMessage(`Landed ${caughtFish.name}! (+1 Ikan) 🐟✨`);
+    } else {
+      setReelProgress(nextProgress);
     }
   };
 
@@ -546,6 +555,8 @@ export default function App() {
       setCurrentIdx((prev) => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
+      setIsReelingMode(false);
+      setReelProgress(0);
       setAnimState("idle");
       setTimer(25);
       setTimerActive(true);
@@ -576,7 +587,6 @@ export default function App() {
         boxSizing: "border-box"
       }}
     >
-      {/* Dynamic 3D Style Helpers */}
       <style>{`
         .btn-3d {
           transition: all 0.1s ease;
@@ -708,7 +718,7 @@ export default function App() {
                 Ranger Class Exclusive • Crusader Club
               </div>
 
-              <AnimatedFishingCanvas animState="idle" />
+              <Interactive3DFishingCanvas animState="idle" reelProgress={0} />
 
               <h2
                 style={{
@@ -718,7 +728,7 @@ export default function App() {
                   margin: "0"
                 }}
               >
-                Sejarah Pathfinder Quest! 🎣
+                3D Sejarah Pathfinder Quest! 🎣
               </h2>
 
               <p
@@ -730,7 +740,7 @@ export default function App() {
                   margin: "0 8px"
                 }}
               >
-                Jawab semua 10 soal sejarah Pathfinder! Jawaban benar menambah 1 ikan ke ember, sedangkan jawaban salah memutus tali pancing (-1 ikan).
+                Jawab semua 10 soal! Saat ikan menyangkut di kail, ketuk tombol 3D Reel secepatnya untuk menarik ikan ke dalam ember!
               </p>
 
               <div style={{ width: "100%", textAlign: "left", marginTop: "4px" }}>
@@ -864,10 +874,40 @@ export default function App() {
                 />
               </div>
 
-              {/* BINGKAI ANIMASI CANVAS PANCINGAN */}
+              {/* 3D LIVE POV CANVAS SCENE */}
               <div style={{ position: "relative" }}>
-                <AnimatedFishingCanvas animState={animState} />
-                {isAnswered && (
+                <Interactive3DFishingCanvas animState={animState} reelProgress={reelProgress} />
+
+                {/* Reel-In Interactive Overlay Button */}
+                {isReelingMode && (
+                  <button
+                    onClick={handleTapReel}
+                    className="btn-3d"
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      backgroundColor: "#f59e0b",
+                      color: "#ffffff",
+                      border: "3px solid #ffffff",
+                      borderRadius: "16px",
+                      padding: "10px 18px",
+                      fontSize: "15px",
+                      fontWeight: 900,
+                      boxShadow: "0 6px 0 #b45309",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <Zap style={{ width: 18, height: 18, color: "#ffffff" }} />
+                    REEL IN FAST! ({reelProgress}%)
+                  </button>
+                )}
+
+                {isAnswered && !isReelingMode && (
                   <div
                     style={{
                       position: "absolute",
@@ -998,7 +1038,7 @@ export default function App() {
               </div>
 
               {/* TOMBOL SELANJUTNYA / LIHAT BUCKET */}
-              {isAnswered && (
+              {isAnswered && !isReelingMode && (
                 <button
                   onClick={handleNextQuestion}
                   className="btn-3d"
@@ -1260,7 +1300,7 @@ export default function App() {
             borderTop: "2px solid #fde047"
           }}
         >
-          Khusus Ranger Class - Crusader Pathfinder Club
+          Ranger Class - Crusader Pathfinder Club
         </div>
       </div>
     </div>
