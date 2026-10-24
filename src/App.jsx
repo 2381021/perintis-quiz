@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Sparkles,
   Volume2,
   VolumeX,
   Compass,
@@ -8,10 +7,8 @@ import {
   XCircle,
   ChevronRight,
   Fish,
-  Waves,
   Medal,
-  Shield,
-  Zap
+  Shield
 } from "lucide-react";
 
 // --- SOUND SYNTHESIZER ---
@@ -43,14 +40,6 @@ const playCuteSound = (type) => {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
       osc.stop(now + 0.3);
-    } else if (type === "reel") {
-      osc.type = "square";
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-      osc.start(now);
-      osc.stop(now + 0.06);
     } else if (type === "click") {
       osc.type = "sine";
       osc.frequency.setValueAtTime(600, now);
@@ -82,10 +71,10 @@ const playCuteSound = (type) => {
 
 // --- JENIS IKAN ---
 const FISH_TYPES = [
-  { name: "Golden Ranger Trout 🐟", pts: 150, color: "#f59e0b", bodyColor: "#f59e0b" },
-  { name: "Rainbow Crusader Bass 🐠", pts: 120, color: "#06b6d4", bodyColor: "#06b6d4" },
-  { name: "Master Guide Salmon 🐡", pts: 200, color: "#f43f5e", bodyColor: "#f43f5e" },
-  { name: "Campfire Catfish 🐟", pts: 100, color: "#8b5cf6", bodyColor: "#8b5cf6" }
+  { name: "Golden Ranger Trout 🐟", pts: 150, bodyColor: "#f59e0b" },
+  { name: "Rainbow Crusader Bass 🐠", pts: 120, bodyColor: "#06b6d4" },
+  { name: "Master Guide Salmon 🐡", pts: 200, bodyColor: "#f43f5e" },
+  { name: "Campfire Catfish 🐟", pts: 100, bodyColor: "#8b5cf6" }
 ];
 
 // --- 10 SOAL LATIHAN SEJARAH PATHFINDER ---
@@ -95,40 +84,35 @@ const INITIAL_QUESTIONS = [
     category: "Sejarah Pathfinder",
     question: "1. Pada tahun berapa Sidang Raya (General Conference) resmi membentuk Departemen Pemuda yang dipimpin oleh M. E. Kern?",
     options: ["A. 1879", "B. 1907", "C. 1922", "D. 1946"],
-    answerIndex: 1,
-    explanation: "Departemen Pemuda resmi dibentuk pada tahun 1907 di bawah pimpinan M. E. Kern."
+    answerIndex: 1
   },
   {
     id: 2,
     category: "Sejarah Pathfinder",
     question: "2. Siapakah tokoh yang menulis janji dan hukum yang kemudian menjadi dasar dari Pledge & Law Pathfinder sekarang?",
     options: ["A. M. E. Kern", "B. John Hancock", "C. Arthur Spalding", "D. Henry Bergh"],
-    answerIndex: 2,
-    explanation: "Arthur Spalding menulis janji dan hukum dasar yang menjadi fondasi Pathfinder."
+    answerIndex: 2
   },
   {
     id: 3,
     category: "Sejarah Pathfinder",
     question: "3. Di manakah nama 'Pathfinder' pertama kali muncul, yang terinspirasi dari kisah penjelajah John Fremont?",
     options: ["A. Riverside, California", "B. Town Line Lake, Michigan", "C. Australia", "D. Idyllwild, California"],
-    answerIndex: 3,
-    explanation: "Nama Pathfinder pertama kali muncul di Idyllwild, California, terinspirasi kisah John Fremont."
+    answerIndex: 3
   },
   {
     id: 4,
     category: "Sejarah Pathfinder",
     question: "4. Klub Pathfinder resmi pertama didirikan di Riverside pada tahun 1946 oleh siapa?",
     options: ["A. John Hancock", "B. Grover Fattic", "C. Lawrence Paulson", "D. Laurence Skinner"],
-    answerIndex: 0,
-    explanation: "John Hancock mendirikan klub resmi Pathfinder pertama di Riverside pada tahun 1946."
+    answerIndex: 0
   },
   {
     id: 5,
     category: "Sejarah Pathfinder",
     question: "5. Pada tahun berapa program Pathfinder diterima secara resmi oleh Sidang Raya di San Francisco dan mulai dipakai di seluruh dunia?",
     options: ["A. 1949", "B. 1950", "C. 1953", "D. 1991"],
-    answerIndex: 1,
-    explanation: "Program Pathfinder diterima secara resmi oleh Sidang Raya pada tahun 1950 di San Francisco."
+    answerIndex: 1
   },
   {
     id: 6,
@@ -140,8 +124,7 @@ const INITIAL_QUESTIONS = [
       "C. Witness Through Roses",
       "D. General Conference Youth"
     ],
-    answerIndex: 0,
-    explanation: "JMV (Junior Missionary Volunteer) adalah wadah pembinaan pemuda usia 10-15 tahun periode 1909–1922."
+    answerIndex: 0
   },
   {
     id: 7,
@@ -153,37 +136,33 @@ const INITIAL_QUESTIONS = [
       "C. Explorer, Ranger, dan Voyager",
       "D. Builder, Helping Hand, dan Friend"
     ],
-    answerIndex: 1,
-    explanation: "Kelas-kelas awal yang dibentuk pada periode tersebut adalah Friend, Companion, dan Comrade."
+    answerIndex: 1
   },
   {
     id: 8,
     category: "Sejarah Pathfinder",
     question: "8. Di manakah perkemahan pertama bagi anak-anak diadakan di luar Amerika Serikat pada tahun 1925?",
     options: ["A. California", "B. Michigan", "C. Australia", "D. San Francisco"],
-    answerIndex: 2,
-    explanation: "Perkemahan luar negeri pertama untuk anak-anak diadakan di Australia pada tahun 1925."
+    answerIndex: 2
   },
   {
     id: 9,
     category: "Sejarah Pathfinder",
     question: "9. Siapakah tokoh yang membuka perkemahan di Town Line Lake, Michigan, pada tahun 1926?",
     options: ["A. Grover Fattic", "B. Lawrence Paulson", "C. Henry Bergh", "D. Ranzolin"],
-    answerIndex: 0,
-    explanation: "Grover Fattic membuka perkemahan bersejarah di Town Line Lake, Michigan pada tahun 1926."
+    answerIndex: 0
   },
   {
     id: 10,
     category: "Sejarah Pathfinder",
     question: "10. Proyek Witness Through Roses yang melibatkan pembuatan hiasan kendaraan hias (float) pada Rose Parade berlangsung pada rentang tahun...",
     options: ["A. 1925–1930", "B. 1946–1949", "C. 1953–1960", "D. 1991–1997"],
-    answerIndex: 3,
-    explanation: "Proyek hiasan Rose Parade (Witness Through Roses) berlangsung dari tahun 1991 hingga 1997."
+    answerIndex: 3
   }
 ];
 
-// --- FIRST-PERSON 3D FISHING CANVAS ---
-const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) => {
+// --- EXPANDED 3D LIVE POV FISHING CANVAS ---
+const Interactive3DFishingCanvas = ({ animState = "idle", activeFishColor = "#f59e0b" }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -199,7 +178,7 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
 
       const w = canvas.width;
       const h = canvas.height;
-      const horizonY = 50;
+      const horizonY = 55;
 
       // 1. 3D Sky Gradient
       const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
@@ -211,22 +190,22 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
       // Sun
       ctx.fillStyle = "#fde047";
       ctx.beginPath();
-      ctx.arc(w / 2, horizonY - 14, 13, 0, Math.PI * 2);
+      ctx.arc(w / 2, horizonY - 16, 16, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. 3D Water Surface
+      // 2. 3D Ocean Surface
       const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
       waterGrad.addColorStop(0, "#0369a1");
       waterGrad.addColorStop(1, "#0284c7");
       ctx.fillStyle = waterGrad;
       ctx.fillRect(0, horizonY, w, h - horizonY);
 
-      // Perspective Grid / Wave lines
+      // Perspective Wave Lines
       ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
       ctx.lineWidth = 1.5;
 
-      for (let y = horizonY; y < h; y += 12) {
-        const lineY = y + Math.sin((tick + y) * 0.08) * 2;
+      for (let y = horizonY; y < h; y += 14) {
+        const lineY = y + Math.sin((tick + y) * 0.08) * 2.5;
         ctx.beginPath();
         ctx.moveTo(0, lineY);
         ctx.lineTo(w, lineY);
@@ -234,42 +213,92 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
       }
 
       // 3. 3D Fishing Rod Tip
-      const rodStartX = w * 0.85;
-      const rodStartY = h + 10;
+      const rodStartX = w * 0.88;
+      const rodStartY = h + 15;
       let rodTipX = w * 0.5;
-      let rodTipY = horizonY + 18;
+      let rodTipY = horizonY + 20;
 
-      if (animState === "reeling") {
-        rodTipX += Math.sin(tick * 0.4) * 6;
-        rodTipY += Math.cos(tick * 0.4) * 4;
+      if (animState === "success") {
+        rodTipX += Math.sin(tick * 0.3) * 8;
+        rodTipY -= 12;
       }
 
-      // Rod Line
       ctx.strokeStyle = "#451a03";
-      ctx.lineWidth = 5;
+      ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(rodStartX, rodStartY);
       ctx.lineTo(rodTipX, rodTipY);
       ctx.stroke();
 
-      // Tip Ring
       ctx.fillStyle = "#facc15";
       ctx.beginPath();
       ctx.arc(rodTipX, rodTipY, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Fishing Line & Bobber
+      // 4. Bobber & Fish Jump Animation
       let bobberX = w * 0.5;
-      let bobberY = horizonY + 32 + (1 - reelProgress / 100) * 45;
+      let bobberY = horizonY + 45;
 
       if (animState === "fail") {
+        // Red Line Snap
         ctx.strokeStyle = "#ef4444";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(rodTipX, rodTipY);
-        ctx.lineTo(rodTipX - 25, rodTipY + 35);
+        ctx.lineTo(rodTipX - 35, rodTipY + 45);
         ctx.stroke();
+
+        // Water Splash Ripple where line snapped
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.6)";
+        ctx.beginPath();
+        ctx.ellipse(bobberX, bobberY, 16 + Math.sin(tick * 0.3) * 6, 6, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (animState === "success") {
+        // Line pulling fish up
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(rodTipX, rodTipY);
+
+        // 3D Fish Parabolic Jump Arc
+        const jumpProgress = Math.min((tick % 40) / 40, 1);
+        const fishX = bobberX + Math.sin(jumpProgress * Math.PI) * 40;
+        const fishY = bobberY - Math.sin(jumpProgress * Math.PI) * 45;
+
+        ctx.lineTo(fishX, fishY);
+        ctx.stroke();
+
+        // Water Splash
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.beginPath();
+        ctx.ellipse(bobberX, bobberY + 10, 20 + jumpProgress * 10, 8, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 3D Leaping Fish
+        ctx.save();
+        ctx.translate(fishX, fishY);
+        ctx.scale(1.2, 1.2);
+
+        ctx.fillStyle = activeFishColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 18, 9, -Math.PI / 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-14, 0);
+        ctx.lineTo(-24, -10);
+        ctx.lineTo(-24, 10);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(8, -2, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
       } else {
+        // Idle Floating Line & Bobber
         ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
@@ -279,13 +308,11 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
 
         const floatY = bobberY + Math.sin(tick * 0.1) * 3;
 
-        // Ripples
         ctx.strokeStyle = "rgba(255,255,255,0.6)";
         ctx.beginPath();
         ctx.ellipse(bobberX, floatY + 4, 12 + Math.sin(tick * 0.2) * 3, 5, 0, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Bobber
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
         ctx.arc(bobberX, floatY, 6, Math.PI, 0);
@@ -294,27 +321,6 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
         ctx.beginPath();
         ctx.arc(bobberX, floatY, 6, 0, Math.PI);
         ctx.fill();
-
-        if (animState === "reeling" || animState === "success") {
-          const fishScale = 0.5 + (reelProgress / 100) * 0.7;
-          ctx.save();
-          ctx.translate(bobberX, floatY + 12);
-          ctx.scale(fishScale, fishScale);
-
-          ctx.fillStyle = "#f59e0b";
-          ctx.beginPath();
-          ctx.ellipse(0, 0, 16, 8, 0, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.moveTo(-12, 0);
-          ctx.lineTo(-22, -8);
-          ctx.lineTo(-22, 8);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.restore();
-        }
       }
 
       frameId = requestAnimationFrame(render);
@@ -323,17 +329,17 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
     render();
 
     return () => cancelAnimationFrame(frameId);
-  }, [animState, reelProgress]);
+  }, [animState, activeFishColor]);
 
   return (
     <canvas
       ref={canvasRef}
       width={360}
-      height={125}
+      height={160}
       style={{
         width: "100%",
-        height: "125px",
-        borderRadius: "18px",
+        height: "160px",
+        borderRadius: "20px",
         border: "4px solid #0284c7",
         boxShadow: "0 6px 0 #0369a1, inset 0 4px 8px rgba(0,0,0,0.25)",
         display: "block"
@@ -456,12 +462,7 @@ export default function App() {
   const [timer, setTimer] = useState(25);
   const [timerActive, setTimerActive] = useState(false);
   const [caughtFish, setCaughtFish] = useState(null);
-  const [actionMessage, setActionMessage] = useState("");
   const [animState, setAnimState] = useState("idle");
-
-  // 3D Interactive Reel Mechanic State
-  const [reelProgress, setReelProgress] = useState(0);
-  const [isReelingMode, setIsReelingMode] = useState(false);
 
   const activeQuestion = questions[currentIdx];
 
@@ -491,8 +492,6 @@ export default function App() {
     setIsAnswered(false);
     setSelectedOption(null);
     setAnimState("idle");
-    setReelProgress(0);
-    setIsReelingMode(false);
     setTimer(25);
     setTimerActive(true);
   };
@@ -508,40 +507,18 @@ export default function App() {
       triggerAudio("correct");
       const randomFish = FISH_TYPES[Math.floor(Math.random() * FISH_TYPES.length)];
       setCaughtFish(randomFish);
-      setIsReelingMode(true);
-      setAnimState("reeling");
-      setReelProgress(20);
-      setActionMessage("FISH ON THE HOOK! TAP REEL FAST! 🎣🔥");
+      setAnimState("success");
+      setFishCaught((prev) => [...prev, randomFish]);
+      setScore((prev) => prev + randomFish.pts + streak * 10);
+      setStreak((prev) => prev + 1);
     } else {
       triggerAudio("wrong");
       setStreak(0);
       setCaughtFish(null);
       setAnimState("fail");
-      setIsReelingMode(false);
       if (fishCaught.length > 0) {
         setFishCaught((prev) => prev.slice(0, -1));
-        setActionMessage("TALI PUTUS! (-1 Ikan dari ember) 🦀💔");
-      } else {
-        setActionMessage("TALI TERSANGKUT DI GANGGANG! 🌿");
       }
-    }
-  };
-
-  const handleTapReel = () => {
-    if (!isReelingMode) return;
-    triggerAudio("reel");
-    const nextProgress = reelProgress + 25;
-    if (nextProgress >= 100) {
-      triggerAudio("catch");
-      setReelProgress(100);
-      setIsReelingMode(false);
-      setAnimState("success");
-      setFishCaught((prev) => [...prev, caughtFish]);
-      setScore((prev) => prev + caughtFish.pts + streak * 10);
-      setStreak((prev) => prev + 1);
-      setActionMessage(`Landed ${caughtFish.name}! (+1 Ikan) 🐟✨`);
-    } else {
-      setReelProgress(nextProgress);
     }
   };
 
@@ -551,8 +528,6 @@ export default function App() {
       setCurrentIdx((prev) => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
-      setIsReelingMode(false);
-      setReelProgress(0);
       setAnimState("idle");
       setTimer(25);
       setTimerActive(true);
@@ -714,7 +689,7 @@ export default function App() {
                 Ranger Class Exclusive • Crusader Club
               </div>
 
-              <Interactive3DFishingCanvas animState="idle" reelProgress={0} />
+              <Interactive3DFishingCanvas animState="idle" />
 
               <h2
                 style={{
@@ -736,7 +711,7 @@ export default function App() {
                   margin: "0 6px"
                 }}
               >
-                Jawab semua 10 soal! Saat ikan menyangkut di kail, ketuk tombol 3D Reel secepatnya untuk menarik ikan ke dalam ember!
+                Jawab semua 10 soal! Jawaban benar memancing ikan melompat dari laut (+1 ikan), sedangkan jawaban salah memutus tali (-1 ikan)!
               </p>
 
               <div style={{ width: "100%", textAlign: "left", marginTop: "2px" }}>
@@ -870,58 +845,11 @@ export default function App() {
                 />
               </div>
 
-              {/* 3D LIVE POV CANVAS SCENE */}
-              <div style={{ position: "relative" }}>
-                <Interactive3DFishingCanvas animState={animState} reelProgress={reelProgress} />
-
-                {/* Reel-In Interactive Overlay Button */}
-                {isReelingMode && (
-                  <button
-                    onClick={handleTapReel}
-                    className="btn-3d"
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      backgroundColor: "#f59e0b",
-                      color: "#ffffff",
-                      border: "2px solid #ffffff",
-                      borderRadius: "14px",
-                      padding: "8px 16px",
-                      fontSize: "13px",
-                      fontWeight: 900,
-                      boxShadow: "0 5px 0 #b45309",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    <Zap style={{ width: 16, height: 16, color: "#ffffff" }} />
-                    REEL IN FAST! ({reelProgress}%)
-                  </button>
-                )}
-              </div>
-
-              {/* OUTSIDE NOTIFICATION BANNER (NEVER OVERLAYS SCENERY) */}
-              {isAnswered && !isReelingMode && (
-                <div
-                  style={{
-                    backgroundColor: animState === "success" ? "#dcfce7" : "#ffe4e6",
-                    color: animState === "success" ? "#15803d" : "#be123c",
-                    border: `2px solid ${animState === "success" ? "#86efac" : "#fda4af"}`,
-                    borderRadius: "12px",
-                    padding: "6px 10px",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                    textAlign: "center",
-                    boxShadow: "0 3px 0 rgba(0,0,0,0.06)"
-                  }}
-                >
-                  {actionMessage}
-                </div>
-              )}
+              {/* 3D LIVE POV CANVAS SCENE (FULL UNOBSTRUCTED SCENERY) */}
+              <Interactive3DFishingCanvas
+                animState={animState}
+                activeFishColor={caughtFish?.bodyColor || "#f59e0b"}
+              />
 
               {/* SOAL & PILIHAN JAWABAN */}
               <div
@@ -1032,7 +960,7 @@ export default function App() {
               </div>
 
               {/* TOMBOL SELANJUTNYA / LIHAT BUCKET */}
-              {isAnswered && !isReelingMode && (
+              {isAnswered && (
                 <button
                   onClick={handleNextQuestion}
                   className="btn-3d"
