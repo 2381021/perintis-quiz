@@ -8,7 +8,8 @@ import {
   ChevronRight,
   Fish,
   Medal,
-  Shield
+  Shield,
+  Sparkles
 } from "lucide-react";
 
 // --- SOUND SYNTHESIZER ---
@@ -161,8 +162,8 @@ const INITIAL_QUESTIONS = [
   }
 ];
 
-// --- EXPANDED 3D LIVE POV FISHING CANVAS ---
-const Interactive3DFishingCanvas = ({ animState = "idle", activeFishColor = "#f59e0b" }) => {
+// --- ULTRA COOL 3D LIVE POV FISHING CANVAS ---
+const Ultra3DFishingCanvas = ({ animState = "idle", activeFishColor = "#f59e0b" }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -172,6 +173,14 @@ const Interactive3DFishingCanvas = ({ animState = "idle", activeFishColor = "#f5
     let frameId;
     let tick = 0;
 
+    // Water particles for 3D realism
+    const particles = Array.from({ length: 18 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: 65 + Math.random() * 110,
+      size: Math.random() * 2 + 1,
+      speed: Math.random() * 0.8 + 0.3
+    }));
+
     const render = () => {
       tick++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -180,146 +189,222 @@ const Interactive3DFishingCanvas = ({ animState = "idle", activeFishColor = "#f5
       const h = canvas.height;
       const horizonY = 55;
 
-      // 1. 3D Sky Gradient
+      // 1. 3D Atmospheric Sky Gradient
       const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
       skyGrad.addColorStop(0, "#0284c7");
+      skyGrad.addColorStop(0.7, "#38bdf8");
       skyGrad.addColorStop(1, "#bae6fd");
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, horizonY);
 
-      // Sun
-      ctx.fillStyle = "#fde047";
+      // Sun Halo & Sun
+      const sunX = w / 2;
+      const sunY = horizonY - 18;
+      const sunGlow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 30);
+      sunGlow.addColorStop(0, "#fde047");
+      sunGlow.addColorStop(0.4, "rgba(254, 240, 138, 0.6)");
+      sunGlow.addColorStop(1, "rgba(254, 240, 138, 0)");
+      ctx.fillStyle = sunGlow;
+      ctx.fillRect(sunX - 35, sunY - 35, 70, 70);
+
+      ctx.fillStyle = "#ffffff";
       ctx.beginPath();
-      ctx.arc(w / 2, horizonY - 16, 16, 0, Math.PI * 2);
+      ctx.arc(sunX, sunY, 12, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. 3D Ocean Surface
-      const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
-      waterGrad.addColorStop(0, "#0369a1");
-      waterGrad.addColorStop(1, "#0284c7");
-      ctx.fillStyle = waterGrad;
+      // 2. 3D Volumetric Ocean Surface
+      const oceanGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+      oceanGrad.addColorStop(0, "#0369a1");
+      oceanGrad.addColorStop(0.4, "#0284c7");
+      oceanGrad.addColorStop(1, "#075985");
+      ctx.fillStyle = oceanGrad;
       ctx.fillRect(0, horizonY, w, h - horizonY);
 
-      // Perspective Wave Lines
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      // Cascading 3D Waves
       ctx.lineWidth = 1.5;
+      for (let y = horizonY; y < h; y += 12) {
+        const perspectiveScale = (y - horizonY) / (h - horizonY);
+        const waveSpeed = tick * (0.04 + perspectiveScale * 0.05);
+        const waveAmp = 1.5 + perspectiveScale * 3.5;
 
-      for (let y = horizonY; y < h; y += 14) {
-        const lineY = y + Math.sin((tick + y) * 0.08) * 2.5;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 + perspectiveScale * 0.25})`;
         ctx.beginPath();
-        ctx.moveTo(0, lineY);
-        ctx.lineTo(w, lineY);
+        for (let x = 0; x <= w; x += 15) {
+          const waveY = y + Math.sin((x + waveSpeed) * 0.06) * waveAmp;
+          if (x === 0) ctx.moveTo(x, waveY);
+          else ctx.lineTo(x, waveY);
+        }
         ctx.stroke();
       }
 
-      // 3. 3D Fishing Rod Tip
-      const rodStartX = w * 0.88;
-      const rodStartY = h + 15;
-      let rodTipX = w * 0.5;
-      let rodTipY = horizonY + 20;
+      // Floating Shimmer Particles
+      particles.forEach((p) => {
+        p.x = (p.x + p.speed) % w;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y + Math.sin(tick * 0.05 + p.x) * 2, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 3. 3D First Person Fishing Rod
+      const rodBaseX = w * 0.9;
+      const rodBaseY = h + 20;
+
+      let flexBendX = 0;
+      let flexBendY = 0;
 
       if (animState === "success") {
-        rodTipX += Math.sin(tick * 0.3) * 8;
-        rodTipY -= 12;
+        flexBendX = Math.sin(tick * 0.2) * 12;
+        flexBendY = -15 + Math.cos(tick * 0.2) * 6;
+      } else if (animState === "fail") {
+        flexBendX = 20;
+        flexBendY = 15;
       }
 
-      ctx.strokeStyle = "#451a03";
-      ctx.lineWidth = 6;
+      const rodTipX = w * 0.5 + flexBendX;
+      const rodTipY = horizonY + 15 + flexBendY;
+
+      // Carbon Fiber Rod Body
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 7;
       ctx.beginPath();
-      ctx.moveTo(rodStartX, rodStartY);
-      ctx.lineTo(rodTipX, rodTipY);
+      ctx.moveTo(rodBaseX, rodBaseY);
+      ctx.quadraticCurveTo(w * 0.7, h * 0.5, rodTipX, rodTipY);
       ctx.stroke();
 
+      // Gold Rod Trim Line
+      ctx.strokeStyle = "#eab308";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(rodBaseX - 2, rodBaseY);
+      ctx.quadraticCurveTo(w * 0.7, h * 0.5, rodTipX, rodTipY);
+      ctx.stroke();
+
+      // Tip Ring Glow
       ctx.fillStyle = "#facc15";
       ctx.beginPath();
-      ctx.arc(rodTipX, rodTipY, 4, 0, Math.PI * 2);
+      ctx.arc(rodTipX, rodTipY, 5, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Bobber & Fish Jump Animation
+      // 4. Dynamic Fishing Line, Bobber & 3D Leaping Fish FX
       let bobberX = w * 0.5;
-      let bobberY = horizonY + 45;
+      let bobberY = horizonY + 50;
 
       if (animState === "fail") {
-        // Red Line Snap
+        // Snapped Line Effect
         ctx.strokeStyle = "#ef4444";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(rodTipX, rodTipY);
-        ctx.lineTo(rodTipX - 35, rodTipY + 45);
+        ctx.lineTo(rodTipX - 40, rodTipY + 40);
         ctx.stroke();
 
-        // Water Splash Ripple where line snapped
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.6)";
+        // Vortex Red Ripple
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.7)";
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.ellipse(bobberX, bobberY, 16 + Math.sin(tick * 0.3) * 6, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(bobberX, bobberY, 20 + Math.sin(tick * 0.3) * 8, 8, 0, 0, Math.PI * 2);
         ctx.stroke();
       } else if (animState === "success") {
-        // Line pulling fish up
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-        ctx.lineWidth = 1.5;
+        // Taut White Fishing Line
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+
+        const jumpPhase = (tick % 35) / 35; // 0 to 1 cycle
+        const arcHeight = Math.sin(jumpPhase * Math.PI) * 65;
+        const fishX = bobberX + Math.sin(jumpPhase * Math.PI) * 50 - 25;
+        const fishY = bobberY - arcHeight;
+
         ctx.beginPath();
         ctx.moveTo(rodTipX, rodTipY);
-
-        // 3D Fish Parabolic Jump Arc
-        const jumpProgress = Math.min((tick % 40) / 40, 1);
-        const fishX = bobberX + Math.sin(jumpProgress * Math.PI) * 40;
-        const fishY = bobberY - Math.sin(jumpProgress * Math.PI) * 45;
-
         ctx.lineTo(fishX, fishY);
         ctx.stroke();
 
-        // Water Splash
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        // Water Splash Drops
+        for (let i = 0; i < 6; i++) {
+          const dropAngle = (i / 6) * Math.PI * 2;
+          const dropDist = jumpPhase * 25;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+          ctx.beginPath();
+          ctx.arc(
+            bobberX + Math.cos(dropAngle) * dropDist,
+            bobberY + Math.sin(dropAngle) * dropDist * 0.4,
+            3,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+        }
+
+        // Expanded Water Ripple Base
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
         ctx.beginPath();
-        ctx.ellipse(bobberX, bobberY + 10, 20 + jumpProgress * 10, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(bobberX, bobberY, 24 + jumpPhase * 14, 9, 0, 0, Math.PI * 2);
         ctx.stroke();
 
-        // 3D Leaping Fish
+        // HIGH DETAIL 3D LEAPING FISH
         ctx.save();
         ctx.translate(fishX, fishY);
-        ctx.scale(1.2, 1.2);
+        ctx.scale(1.35, 1.35);
 
+        // Fish Body Shadow/Glow
         ctx.fillStyle = activeFishColor;
         ctx.beginPath();
-        ctx.ellipse(0, 0, 18, 9, -Math.PI / 6, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 20, 10, -Math.PI / 5, 0, Math.PI * 2);
         ctx.fill();
 
+        // 3D Shiny Belly Highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
         ctx.beginPath();
-        ctx.moveTo(-14, 0);
-        ctx.lineTo(-24, -10);
-        ctx.lineTo(-24, 10);
+        ctx.ellipse(2, 3, 14, 5, -Math.PI / 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Animated Oscillating Tail Fin
+        const tailOffset = Math.sin(tick * 0.5) * 4;
+        ctx.fillStyle = activeFishColor;
+        ctx.beginPath();
+        ctx.moveTo(-16, 0);
+        ctx.lineTo(-28, -12 + tailOffset);
+        ctx.lineTo(-28, 12 + tailOffset);
         ctx.closePath();
         ctx.fill();
 
+        // Fish Eye
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.arc(8, -2, 3, 0, Math.PI * 2);
+        ctx.arc(10, -3, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath();
+        ctx.arc(11, -3, 2, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
       } else {
         // Idle Floating Line & Bobber
+        const floatY = bobberY + Math.sin(tick * 0.08) * 3;
+
         ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(rodTipX, rodTipY);
-        ctx.lineTo(bobberX, bobberY);
+        ctx.lineTo(bobberX, floatY);
         ctx.stroke();
 
-        const floatY = bobberY + Math.sin(tick * 0.1) * 3;
-
-        ctx.strokeStyle = "rgba(255,255,255,0.6)";
+        // Concentric Ripple Ring
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
         ctx.beginPath();
-        ctx.ellipse(bobberX, floatY + 4, 12 + Math.sin(tick * 0.2) * 3, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(bobberX, floatY + 5, 14 + Math.sin(tick * 0.15) * 4, 6, 0, 0, Math.PI * 2);
         ctx.stroke();
 
+        // 3D Red-White Bobber
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
-        ctx.arc(bobberX, floatY, 6, Math.PI, 0);
+        ctx.arc(bobberX, floatY, 7, Math.PI, 0);
         ctx.fill();
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.arc(bobberX, floatY, 6, 0, Math.PI);
+        ctx.arc(bobberX, floatY, 7, 0, Math.PI);
         ctx.fill();
       }
 
@@ -335,13 +420,13 @@ const Interactive3DFishingCanvas = ({ animState = "idle", activeFishColor = "#f5
     <canvas
       ref={canvasRef}
       width={360}
-      height={160}
+      height={175}
       style={{
         width: "100%",
-        height: "160px",
-        borderRadius: "20px",
+        height: "175px",
+        borderRadius: "22px",
         border: "4px solid #0284c7",
-        boxShadow: "0 6px 0 #0369a1, inset 0 4px 8px rgba(0,0,0,0.25)",
+        boxShadow: "0 8px 0 #0369a1, inset 0 4px 12px rgba(0,0,0,0.3)",
         display: "block"
       }}
     />
@@ -689,7 +774,7 @@ export default function App() {
                 Ranger Class Exclusive • Crusader Club
               </div>
 
-              <Interactive3DFishingCanvas animState="idle" />
+              <Ultra3DFishingCanvas animState="idle" />
 
               <h2
                 style={{
@@ -845,8 +930,8 @@ export default function App() {
                 />
               </div>
 
-              {/* 3D LIVE POV CANVAS SCENE (FULL UNOBSTRUCTED SCENERY) */}
-              <Interactive3DFishingCanvas
+              {/* 3D LIVE POV CANVAS SCENE (CINEMATIC & UNOBSTRUCTED) */}
+              <Ultra3DFishingCanvas
                 animState={animState}
                 activeFishColor={caughtFish?.bodyColor || "#f59e0b"}
               />
