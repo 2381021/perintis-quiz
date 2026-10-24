@@ -199,7 +199,7 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
 
       const w = canvas.width;
       const h = canvas.height;
-      const horizonY = 55;
+      const horizonY = 50;
 
       // 1. 3D Sky Gradient
       const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
@@ -211,10 +211,10 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
       // Sun
       ctx.fillStyle = "#fde047";
       ctx.beginPath();
-      ctx.arc(w / 2, horizonY - 15, 14, 0, Math.PI * 2);
+      ctx.arc(w / 2, horizonY - 14, 13, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. 3D Water Surface with Perspective Lines
+      // 2. 3D Water Surface
       const waterGrad = ctx.createLinearGradient(0, horizonY, 0, h);
       waterGrad.addColorStop(0, "#0369a1");
       waterGrad.addColorStop(1, "#0284c7");
@@ -226,69 +226,66 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
       ctx.lineWidth = 1.5;
 
       for (let y = horizonY; y < h; y += 12) {
-        const lineY = y + (Math.sin((tick + y) * 0.08) * 2);
+        const lineY = y + Math.sin((tick + y) * 0.08) * 2;
         ctx.beginPath();
         ctx.moveTo(0, lineY);
         ctx.lineTo(w, lineY);
         ctx.stroke();
       }
 
-      // 3. 3D Fishing Rod Tip (First Person POV from Bottom Right)
+      // 3. 3D Fishing Rod Tip
       const rodStartX = w * 0.85;
       const rodStartY = h + 10;
       let rodTipX = w * 0.5;
-      let rodTipY = horizonY + 20;
+      let rodTipY = horizonY + 18;
 
       if (animState === "reeling") {
         rodTipX += Math.sin(tick * 0.4) * 6;
         rodTipY += Math.cos(tick * 0.4) * 4;
       }
 
-      // Fishing Rod
+      // Rod Line
       ctx.strokeStyle = "#451a03";
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(rodStartX, rodStartY);
       ctx.lineTo(rodTipX, rodTipY);
       ctx.stroke();
 
-      // Rod Guides / Rings
+      // Tip Ring
       ctx.fillStyle = "#facc15";
       ctx.beginPath();
       ctx.arc(rodTipX, rodTipY, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Fishing Line & 3D Bobber / Fish Position
+      // 4. Fishing Line & Bobber
       let bobberX = w * 0.5;
-      let bobberY = horizonY + 35 + (1 - reelProgress / 100) * 50;
+      let bobberY = horizonY + 32 + (1 - reelProgress / 100) * 45;
 
       if (animState === "fail") {
-        // Line Snapped Effect
         ctx.strokeStyle = "#ef4444";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(rodTipX, rodTipY);
-        ctx.lineTo(rodTipX - 30, rodTipY + 40);
+        ctx.lineTo(rodTipX - 25, rodTipY + 35);
         ctx.stroke();
       } else {
-        // Active Line
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(rodTipX, rodTipY);
         ctx.lineTo(bobberX, bobberY);
         ctx.stroke();
 
-        // 3D Bobber Float
         const floatY = bobberY + Math.sin(tick * 0.1) * 3;
 
-        // Ripple Ring
+        // Ripples
         ctx.strokeStyle = "rgba(255,255,255,0.6)";
         ctx.beginPath();
         ctx.ellipse(bobberX, floatY + 4, 12 + Math.sin(tick * 0.2) * 3, 5, 0, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Red/White Bobber
+        // Bobber
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
         ctx.arc(bobberX, floatY, 6, Math.PI, 0);
@@ -298,11 +295,10 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
         ctx.arc(bobberX, floatY, 6, 0, Math.PI);
         ctx.fill();
 
-        // If reeling or success, draw the fish approaching in 3D
         if (animState === "reeling" || animState === "success") {
-          const fishScale = 0.5 + (reelProgress / 100) * 0.8;
+          const fishScale = 0.5 + (reelProgress / 100) * 0.7;
           ctx.save();
-          ctx.translate(bobberX, floatY + 15);
+          ctx.translate(bobberX, floatY + 12);
           ctx.scale(fishScale, fishScale);
 
           ctx.fillStyle = "#f59e0b";
@@ -333,13 +329,13 @@ const Interactive3DFishingCanvas = ({ animState = "idle", reelProgress = 0 }) =>
     <canvas
       ref={canvasRef}
       width={360}
-      height={140}
+      height={125}
       style={{
         width: "100%",
-        height: "140px",
-        borderRadius: "20px",
+        height: "125px",
+        borderRadius: "18px",
         border: "4px solid #0284c7",
-        boxShadow: "0 8px 0 #0369a1, inset 0 4px 10px rgba(0,0,0,0.3)",
+        boxShadow: "0 6px 0 #0369a1, inset 0 4px 8px rgba(0,0,0,0.25)",
         display: "block"
       }}
     />
@@ -433,12 +429,12 @@ const AnimatedBucketPOVCanvas = ({ fishCount = 0, fishList = [] }) => {
   return (
     <canvas
       ref={canvasRef}
-      width={240}
-      height={240}
+      width={220}
+      height={220}
       style={{
         borderRadius: "50%",
-        border: "12px solid #78350f",
-        boxShadow: "inset 0 0 25px rgba(0,0,0,0.6), 0 12px 20px rgba(0,0,0,0.25)",
+        border: "10px solid #78350f",
+        boxShadow: "inset 0 0 20px rgba(0,0,0,0.6), 0 10px 18px rgba(0,0,0,0.2)",
         display: "block",
         margin: "0 auto"
       }}
@@ -524,7 +520,7 @@ export default function App() {
       setIsReelingMode(false);
       if (fishCaught.length > 0) {
         setFishCaught((prev) => prev.slice(0, -1));
-        setActionMessage("LINE SNAPPED! (-1 Ikan dari ember) 🦀💔");
+        setActionMessage("TALI PUTUS! (-1 Ikan dari ember) 🦀💔");
       } else {
         setActionMessage("TALI TERSANGKUT DI GANGGANG! 🌿");
       }
@@ -583,7 +579,7 @@ export default function App() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "10px",
+        padding: "8px",
         boxSizing: "border-box"
       }}
     >
@@ -593,7 +589,7 @@ export default function App() {
           position: relative;
         }
         .btn-3d:active {
-          transform: translateY(4px) !important;
+          transform: translateY(3px) !important;
           box-shadow: none !important;
         }
       `}</style>
@@ -602,11 +598,11 @@ export default function App() {
       <div
         style={{
           width: "100%",
-          maxWidth: "430px",
+          maxWidth: "420px",
           backgroundColor: "#ffffff",
-          borderRadius: "32px",
+          borderRadius: "28px",
           border: "5px solid #fde047",
-          boxShadow: "0 25px 0 #eab308, 0 30px 40px rgba(0,0,0,0.15)",
+          boxShadow: "0 20px 0 #eab308, 0 25px 35px rgba(0,0,0,0.15)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -618,31 +614,31 @@ export default function App() {
         <div
           style={{
             backgroundColor: "#fef9c3",
-            padding: "12px 16px",
+            padding: "10px 14px",
             borderBottom: "4px solid #fde047",
-            boxShadow: "0 4px 0 #fef08a",
+            boxShadow: "0 3px 0 #fef08a",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             zIndex: 10
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div
               style={{
                 backgroundColor: "#15803d",
-                padding: "8px",
-                borderRadius: "14px",
-                boxShadow: "0 4px 0 #166534"
+                padding: "6px",
+                borderRadius: "12px",
+                boxShadow: "0 3px 0 #166534"
               }}
             >
-              <Compass style={{ width: 22, height: 22, color: "#ffffff" }} />
+              <Compass style={{ width: 20, height: 20, color: "#ffffff" }} />
             </div>
             <div>
               <div
                 style={{
                   fontWeight: 900,
-                  fontSize: "14px",
+                  fontSize: "13px",
                   color: "#15803d",
                   lineHeight: "1.1"
                 }}
@@ -663,16 +659,16 @@ export default function App() {
             style={{
               backgroundColor: "#fef08a",
               border: "2px solid #fde047",
-              padding: "8px",
-              borderRadius: "14px",
-              boxShadow: "0 4px 0 #facc15",
+              padding: "6px",
+              borderRadius: "12px",
+              boxShadow: "0 3px 0 #facc15",
               cursor: "pointer"
             }}
           >
             {soundEnabled ? (
-              <Volume2 style={{ width: 18, height: 18, color: "#713f12" }} />
+              <Volume2 style={{ width: 16, height: 16, color: "#713f12" }} />
             ) : (
-              <VolumeX style={{ width: 18, height: 18, color: "#94a3b8" }} />
+              <VolumeX style={{ width: 16, height: 16, color: "#94a3b8" }} />
             )}
           </button>
         </div>
@@ -680,7 +676,7 @@ export default function App() {
         {/* AREA ISI UTAMA */}
         <div
           style={{
-            padding: "14px",
+            padding: "12px",
             flex: 1,
             display: "flex",
             flexDirection: "column",
@@ -695,7 +691,7 @@ export default function App() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "14px",
+                gap: "12px",
                 margin: "auto 0"
               }}
             >
@@ -703,7 +699,7 @@ export default function App() {
                 style={{
                   backgroundColor: "#dcfce7",
                   color: "#15803d",
-                  padding: "6px 14px",
+                  padding: "5px 12px",
                   borderRadius: "999px",
                   fontSize: "11px",
                   fontWeight: 900,
@@ -711,7 +707,7 @@ export default function App() {
                   alignItems: "center",
                   gap: "6px",
                   border: "2px solid #86efac",
-                  boxShadow: "0 4px 0 #bbf7d0"
+                  boxShadow: "0 3px 0 #bbf7d0"
                 }}
               >
                 <Shield style={{ width: 14, height: 14, color: "#16a34a" }} />
@@ -722,7 +718,7 @@ export default function App() {
 
               <h2
                 style={{
-                  fontSize: "22px",
+                  fontSize: "20px",
                   fontWeight: 900,
                   color: "#713f12",
                   margin: "0"
@@ -733,20 +729,20 @@ export default function App() {
 
               <p
                 style={{
-                  fontSize: "12px",
+                  fontSize: "11px",
                   color: "#475569",
                   fontWeight: 600,
                   lineHeight: "1.4",
-                  margin: "0 8px"
+                  margin: "0 6px"
                 }}
               >
                 Jawab semua 10 soal! Saat ikan menyangkut di kail, ketuk tombol 3D Reel secepatnya untuk menarik ikan ke dalam ember!
               </p>
 
-              <div style={{ width: "100%", textAlign: "left", marginTop: "4px" }}>
+              <div style={{ width: "100%", textAlign: "left", marginTop: "2px" }}>
                 <label
                   style={{
-                    fontSize: "11px",
+                    fontSize: "10px",
                     fontWeight: 900,
                     color: "#854d0e",
                     textTransform: "uppercase"
@@ -760,16 +756,16 @@ export default function App() {
                   onChange={(e) => setCadetName(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "14px",
-                    marginTop: "6px",
+                    padding: "12px",
+                    marginTop: "4px",
                     backgroundColor: "#fefce8",
                     border: "3px solid #fde047",
-                    borderRadius: "18px",
+                    borderRadius: "16px",
                     fontWeight: 900,
                     textAlign: "center",
-                    fontSize: "16px",
+                    fontSize: "15px",
                     color: "#713f12",
-                    boxShadow: "inset 0 4px 6px rgba(0,0,0,0.06)",
+                    boxShadow: "inset 0 3px 5px rgba(0,0,0,0.06)",
                     boxSizing: "border-box"
                   }}
                   placeholder="Ketik nama Ranger..."
@@ -781,14 +777,14 @@ export default function App() {
                 className="btn-3d"
                 style={{
                   width: "100%",
-                  padding: "16px",
+                  padding: "14px",
                   backgroundColor: "#15803d",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "20px",
+                  borderRadius: "18px",
                   fontWeight: 900,
-                  fontSize: "17px",
-                  boxShadow: "0 6px 0 #166534",
+                  fontSize: "16px",
+                  boxShadow: "0 5px 0 #166534",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -796,7 +792,7 @@ export default function App() {
                   gap: "8px"
                 }}
               >
-                <Fish style={{ width: 22, height: 22, color: "#ffffff" }} />
+                <Fish style={{ width: 20, height: 20, color: "#ffffff" }} />
                 MULAI KUIS RANGER CLASS!
               </button>
             </div>
@@ -808,7 +804,7 @@ export default function App() {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "10px",
+                gap: "8px",
                 flex: 1
               }}
             >
@@ -816,10 +812,10 @@ export default function App() {
               <div
                 style={{
                   backgroundColor: "#fefce8",
-                  padding: "10px 12px",
-                  borderRadius: "16px",
-                  border: "3px solid #fde047",
-                  boxShadow: "0 4px 0 #facc15",
+                  padding: "8px 10px",
+                  borderRadius: "14px",
+                  border: "2px solid #fde047",
+                  boxShadow: "0 3px 0 #facc15",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center"
@@ -827,12 +823,12 @@ export default function App() {
               >
                 <span
                   style={{
-                    fontSize: "12px",
+                    fontSize: "11px",
                     fontWeight: 900,
                     backgroundColor: "#fef08a",
                     color: "#713f12",
-                    padding: "4px 10px",
-                    borderRadius: "10px"
+                    padding: "3px 8px",
+                    borderRadius: "8px"
                   }}
                 >
                   Q {currentIdx + 1}/{questions.length}
@@ -842,13 +838,13 @@ export default function App() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
-                    fontSize: "13px",
+                    gap: "4px",
+                    fontSize: "12px",
                     fontWeight: 900,
                     color: "#0284c7"
                   }}
                 >
-                  <Fish style={{ width: 18, height: 18, color: "#0284c7" }} />
+                  <Fish style={{ width: 16, height: 16, color: "#0284c7" }} />
                   <span>Bucket: {fishCaught.length} 🐟</span>
                 </div>
               </div>
@@ -857,7 +853,7 @@ export default function App() {
               <div
                 style={{
                   width: "100%",
-                  height: "8px",
+                  height: "6px",
                   backgroundColor: "#e2e8f0",
                   borderRadius: "999px",
                   overflow: "hidden",
@@ -890,65 +886,63 @@ export default function App() {
                       transform: "translate(-50%, -50%)",
                       backgroundColor: "#f59e0b",
                       color: "#ffffff",
-                      border: "3px solid #ffffff",
-                      borderRadius: "16px",
-                      padding: "10px 18px",
-                      fontSize: "15px",
+                      border: "2px solid #ffffff",
+                      borderRadius: "14px",
+                      padding: "8px 16px",
+                      fontSize: "13px",
                       fontWeight: 900,
-                      boxShadow: "0 6px 0 #b45309",
+                      boxShadow: "0 5px 0 #b45309",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       gap: "6px"
                     }}
                   >
-                    <Zap style={{ width: 18, height: 18, color: "#ffffff" }} />
+                    <Zap style={{ width: 16, height: 16, color: "#ffffff" }} />
                     REEL IN FAST! ({reelProgress}%)
                   </button>
                 )}
-
-                {isAnswered && !isReelingMode && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "8px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      backgroundColor:
-                        animState === "success" ? "#22c55e" : "#ef4444",
-                      color: "#ffffff",
-                      padding: "4px 12px",
-                      borderRadius: "12px",
-                      fontSize: "11px",
-                      fontWeight: 900,
-                      boxShadow: "0 4px 0 rgba(0,0,0,0.2)"
-                    }}
-                  >
-                    {actionMessage}
-                  </div>
-                )}
               </div>
+
+              {/* OUTSIDE NOTIFICATION BANNER (NEVER OVERLAYS SCENERY) */}
+              {isAnswered && !isReelingMode && (
+                <div
+                  style={{
+                    backgroundColor: animState === "success" ? "#dcfce7" : "#ffe4e6",
+                    color: animState === "success" ? "#15803d" : "#be123c",
+                    border: `2px solid ${animState === "success" ? "#86efac" : "#fda4af"}`,
+                    borderRadius: "12px",
+                    padding: "6px 10px",
+                    fontSize: "11px",
+                    fontWeight: 900,
+                    textAlign: "center",
+                    boxShadow: "0 3px 0 rgba(0,0,0,0.06)"
+                  }}
+                >
+                  {actionMessage}
+                </div>
+              )}
 
               {/* SOAL & PILIHAN JAWABAN */}
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "8px",
+                  gap: "6px",
                   marginTop: "2px"
                 }}
               >
                 <div
                   style={{
                     backgroundColor: "#fffbeb",
-                    padding: "12px 14px",
-                    borderRadius: "18px",
-                    border: "3px solid #fcd34d",
-                    boxShadow: "0 4px 0 #fef08a",
-                    fontSize: "13px",
+                    padding: "10px 12px",
+                    borderRadius: "16px",
+                    border: "2px solid #fcd34d",
+                    boxShadow: "0 3px 0 #fef08a",
+                    fontSize: "12px",
                     fontWeight: 900,
                     color: "#713f12",
-                    lineHeight: "1.35"
+                    lineHeight: "1.3"
                   }}
                 >
                   {activeQuestion.question}
@@ -958,7 +952,7 @@ export default function App() {
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "8px"
+                    gap: "6px"
                   }}
                 >
                   {activeQuestion.options.map((opt, idx) => {
@@ -993,14 +987,14 @@ export default function App() {
                         disabled={isAnswered}
                         className="btn-3d"
                         style={{
-                          padding: "12px 14px",
+                          padding: "10px 12px",
                           backgroundColor: btnBg,
                           border: `2px solid ${btnBorder}`,
-                          borderRadius: "16px",
-                          boxShadow: `0 4px 0 ${btnShadow}`,
+                          borderRadius: "14px",
+                          boxShadow: `0 3px 0 ${btnShadow}`,
                           textAlign: "left",
                           fontWeight: 800,
-                          fontSize: "12px",
+                          fontSize: "11px",
                           color: btnColor,
                           cursor: "pointer",
                           display: "flex",
@@ -1012,8 +1006,8 @@ export default function App() {
                         {isAnswered && idx === activeQuestion.answerIndex && (
                           <CheckCircle2
                             style={{
-                              width: 18,
-                              height: 18,
+                              width: 16,
+                              height: 16,
                               color: "#16a34a",
                               flexShrink: 0
                             }}
@@ -1024,8 +1018,8 @@ export default function App() {
                           idx !== activeQuestion.answerIndex && (
                             <XCircle
                               style={{
-                                width: 18,
-                                height: 18,
+                                width: 16,
+                                height: 16,
                                 color: "#e11d48",
                                 flexShrink: 0
                               }}
@@ -1044,19 +1038,19 @@ export default function App() {
                   className="btn-3d"
                   style={{
                     width: "100%",
-                    padding: "14px",
+                    padding: "12px",
                     backgroundColor: "#f59e0b",
                     color: "#ffffff",
                     border: "none",
-                    borderRadius: "18px",
+                    borderRadius: "16px",
                     fontWeight: 900,
-                    fontSize: "15px",
-                    boxShadow: "0 5px 0 #b45309",
+                    fontSize: "14px",
+                    boxShadow: "0 4px 0 #b45309",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "8px",
+                    gap: "6px",
                     marginTop: "auto"
                   }}
                 >
@@ -1065,7 +1059,7 @@ export default function App() {
                       ? "Lihat ke Dalam Ember Ikan 🪣"
                       : "Soal Selanjutnya"}
                   </span>
-                  <ChevronRight style={{ width: 18, height: 18 }} />
+                  <ChevronRight style={{ width: 16, height: 16 }} />
                 </button>
               )}
             </div>
@@ -1079,20 +1073,20 @@ export default function App() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "14px",
+                gap: "12px",
                 margin: "auto 0"
               }}
             >
               <div
                 style={{
                   backgroundColor: "#dcfce7",
-                  padding: "6px 14px",
+                  padding: "5px 12px",
                   borderRadius: "999px",
                   fontSize: "11px",
                   fontWeight: 900,
                   color: "#15803d",
                   border: "2px solid #86efac",
-                  boxShadow: "0 4px 0 #bbf7d0"
+                  boxShadow: "0 3px 0 #bbf7d0"
                 }}
               >
                 👀 MENGINTIP KE DALAM EMBER IKAN
@@ -1103,18 +1097,18 @@ export default function App() {
               <div
                 style={{
                   backgroundColor: "#fffbeb",
-                  border: "3px solid #fcd34d",
-                  borderRadius: "20px",
-                  padding: "12px 16px",
-                  boxShadow: "0 4px 0 #fef08a",
+                  border: "2px solid #fcd34d",
+                  borderRadius: "18px",
+                  padding: "10px 14px",
+                  boxShadow: "0 3px 0 #fef08a",
                   width: "100%",
                   boxSizing: "border-box"
                 }}
               >
-                <div style={{ fontSize: "14px", fontWeight: 900, color: "#713f12" }}>
+                <div style={{ fontSize: "13px", fontWeight: 900, color: "#713f12" }}>
                   Ember Tangkapan {cadetName}
                 </div>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: "#0284c7", marginTop: "2px" }}>
+                <div style={{ fontSize: "16px", fontWeight: 900, color: "#0284c7", marginTop: "2px" }}>
                   Total {fishCaught.length} Ikan Tersimpan! 🐟
                 </div>
               </div>
@@ -1124,23 +1118,23 @@ export default function App() {
                 className="btn-3d"
                 style={{
                   width: "100%",
-                  padding: "16px",
+                  padding: "14px",
                   backgroundColor: "#15803d",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "18px",
+                  borderRadius: "16px",
                   fontWeight: 900,
-                  fontSize: "16px",
-                  boxShadow: "0 6px 0 #166534",
+                  fontSize: "15px",
+                  boxShadow: "0 5px 0 #166534",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "8px"
+                  gap: "6px"
                 }}
               >
                 <span>Lihat Hasil Akhir</span>
-                <ChevronRight style={{ width: 20, height: 20 }} />
+                <ChevronRight style={{ width: 18, height: 18 }} />
               </button>
             </div>
           )}
@@ -1153,25 +1147,25 @@ export default function App() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "14px",
+                gap: "12px",
                 margin: "auto 0"
               }}
             >
               <div
                 style={{
                   backgroundColor: "#fef08a",
-                  padding: "12px",
+                  padding: "10px",
                   borderRadius: "999px",
                   display: "inline-block",
-                  boxShadow: "0 6px 0 #facc15"
+                  boxShadow: "0 5px 0 #facc15"
                 }}
               >
-                <Medal style={{ width: 44, height: 44, color: "#ca8a04" }} />
+                <Medal style={{ width: 40, height: 40, color: "#ca8a04" }} />
               </div>
 
               <h2
                 style={{
-                  fontSize: "22px",
+                  fontSize: "20px",
                   fontWeight: 900,
                   color: "#713f12",
                   margin: 0
@@ -1183,17 +1177,17 @@ export default function App() {
               <div
                 style={{
                   backgroundColor: "#fefce8",
-                  border: "4px solid #fde047",
-                  borderRadius: "22px",
-                  padding: "14px",
-                  boxShadow: "0 6px 0 #facc15",
+                  border: "3px solid #fde047",
+                  borderRadius: "20px",
+                  padding: "12px",
+                  boxShadow: "0 5px 0 #facc15",
                   boxSizing: "border-box",
                   width: "100%"
                 }}
               >
                 <div
                   style={{
-                    fontSize: "18px",
+                    fontSize: "16px",
                     fontWeight: 900,
                     color: "#b45309",
                     margin: "2px 0"
@@ -1203,10 +1197,10 @@ export default function App() {
                 </div>
                 <div
                   style={{
-                    fontSize: "11px",
+                    fontSize: "10px",
                     fontWeight: 800,
                     color: "#15803d",
-                    marginBottom: "10px"
+                    marginBottom: "8px"
                   }}
                 >
                   Ranger Class • Crusader Pathfinder Club
@@ -1216,17 +1210,17 @@ export default function App() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "10px",
+                    gap: "8px",
                     backgroundColor: "#ffffff",
-                    padding: "10px",
-                    borderRadius: "14px",
+                    padding: "8px",
+                    borderRadius: "12px",
                     border: "2px solid #fde047"
                   }}
                 >
                   <div>
                     <div
                       style={{
-                        fontSize: "10px",
+                        fontSize: "9px",
                         fontWeight: 900,
                         color: "#94a3b8"
                       }}
@@ -1235,7 +1229,7 @@ export default function App() {
                     </div>
                     <div
                       style={{
-                        fontSize: "16px",
+                        fontSize: "15px",
                         fontWeight: 900,
                         color: "#0284c7"
                       }}
@@ -1246,7 +1240,7 @@ export default function App() {
                   <div>
                     <div
                       style={{
-                        fontSize: "10px",
+                        fontSize: "9px",
                         fontWeight: 900,
                         color: "#94a3b8"
                       }}
@@ -1255,7 +1249,7 @@ export default function App() {
                     </div>
                     <div
                       style={{
-                        fontSize: "16px",
+                        fontSize: "15px",
                         fontWeight: 900,
                         color: "#b45309"
                       }}
@@ -1271,14 +1265,14 @@ export default function App() {
                 className="btn-3d"
                 style={{
                   width: "100%",
-                  padding: "16px",
+                  padding: "14px",
                   backgroundColor: "#15803d",
                   color: "#ffffff",
                   border: "none",
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: 900,
-                  fontSize: "15px",
-                  boxShadow: "0 6px 0 #166534",
+                  fontSize: "14px",
+                  boxShadow: "0 5px 0 #166534",
                   cursor: "pointer"
                 }}
               >
@@ -1292,7 +1286,7 @@ export default function App() {
         <div
           style={{
             backgroundColor: "#fefce8",
-            padding: "8px",
+            padding: "6px",
             textAlign: "center",
             fontSize: "9px",
             fontWeight: 800,
@@ -1300,7 +1294,7 @@ export default function App() {
             borderTop: "2px solid #fde047"
           }}
         >
-          Ranger Class - Crusader Pathfinder Club
+          Khusus Ranger Class - Crusader Pathfinder Club
         </div>
       </div>
     </div>
